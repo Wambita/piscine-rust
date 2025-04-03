@@ -1,13 +1,13 @@
 pub fn sum(a: u8, b: u8) -> u8 {
-    a.saturating_add(b)
+    a.checked_add(b).expect("ERROR: attempt to add with overflow")
 }
 
 pub fn diff(a: i16, b: i16) -> i16 {
-    a.saturating_sub(b)
+    a.checked_sub(b).expect("ERROR: attempt to subtract with overflow")
 }
 
 pub fn pro(a: i8, b: i8) -> i8 {
-    a.saturating_mul(b)
+    a.checked_mul(b).expect("ERROR: attempt to multiply with overflow")
 }
 
 pub fn quo(a: f32, b: f32) -> f32 {
@@ -36,8 +36,8 @@ mod tests {
     }
     
     #[test]
-    #[should_panic]
-    fn test_sum_overflow() {
+    #[should_panic(expected = "ERROR: attempt to add with overflow")]
+    fn test_panic_sum() {
         sum(255, 1);
     }
 
@@ -47,8 +47,8 @@ mod tests {
     }
     
     #[test]
-    #[should_panic]
-    fn test_diff_overflow() {
+    #[should_panic(expected = "ERROR: attempt to subtract with overflow")]
+    fn test_panic_diff() {
         diff(-32768, 32766);
     }
 
@@ -58,8 +58,8 @@ mod tests {
     }
     
     #[test]
-    #[should_panic]
-    fn test_pro_overflow() {
+    #[should_panic(expected = "ERROR: attempt to multiply with overflow")]
+    fn test_panic_pro() {
         pro(-128, 2);
     }
 
