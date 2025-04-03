@@ -1,21 +1,29 @@
 pub fn delete_and_backspace(s: &mut String) {
     let mut result = Vec::new();
     let mut skip_next = false;
-    
+
     for c in s.chars() {
         if skip_next {
             skip_next = false;
             continue;
         }
+
         match c {
-            '-' => { result.pop(); } 
-            '+' => { skip_next = true; }
-            _ => result.push(c),
+            '-' => {
+                result.pop();
+            }
+            '+' => {
+                skip_next = true;
+            }
+            _ => {
+                result.push(c);
+            }
         }
     }
 
     *s = result.into_iter().collect();
 }
+
 
 
 pub fn do_operations(v: &mut [String]) {
