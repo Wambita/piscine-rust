@@ -1,22 +1,18 @@
 pub fn arrange_phrase(phrase: &str) -> String {
-    let words: Vec<&str> = phrase.split_whitespace().collect();
-    let mut processed: Vec<(u32, String)> = words
-        .into_iter()
-        .map(|word| {
-            let mut num_str = String::new();
-            let mut cleaned = String::new();
-            for c in word.chars() {
-                if c.is_ascii_digit() {
-                    num_str.push(c);
-                } else {
-                    cleaned.push(c);
-                }
-            }
-            let pos = num_str.parse::<u32>().unwrap();
-            (pos, cleaned)
+    let mut words: Vec<&str> = phrase.split_whitespace().collect();
+
+    words.sort_by_key(|word| {
+        word.chars()
+            .find(|c| c.is_digit(10))
+            .and_then(|c| c.to_digit(10))
+            .unwrap_or(0)
+    });
+    words
+        .iter()
+        .map(|&word| {
+            let removed = word.chars().filter(|c| c.is_alphabetic()).collect();
+            removed
         })
-        .collect();
-    processed.sort_by_key(|&(pos, _)| pos);
-    let sorted_words: Vec<String> = processed.into_iter().map(|(_, word)| word).collect();
-    sorted_words.join(" ")
+        .collect::<Vec<String>>()
+        .join(" ")
 }
