@@ -1,6 +1,6 @@
 pub mod areas_volumes;
 
-use areas_volumes::{
+use areas_volumes::areas_volumes::{
     GeometricalShapes, GeometricalVolumes,
     square_area, circle_area, rectangle_area, triangle_area,
     cube_volume, sphere_volume, cone_volume, triangular_pyramid_volume, parallelepiped_volume
