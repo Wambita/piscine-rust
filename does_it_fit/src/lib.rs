@@ -1,6 +1,5 @@
-use areas_volumes::{
-    self, GeometricalShapes, GeometricalVolumes,
-};
+mod areas_volumes;
+use areas_volumes::{GeometricalShapes, GeometricalVolumes};
 
 pub fn area_fit(
     (x, y): (usize, usize),
@@ -30,7 +29,7 @@ pub fn volume_fit(
         GeometricalVolumes::Sphere => areas_volumes::sphere_volume(a),
         GeometricalVolumes::Cone => areas_volumes::cone_volume(a, b),
         GeometricalVolumes::TriangularPyramid => {
-            let base_area = a as f64; // `a` is base_area here
+            let base_area = a as f64; // `a` is base_area
             areas_volumes::triangular_pyramid_volume(base_area, b)
         }
         GeometricalVolumes::Parallelepiped => areas_volumes::parallelepiped_volume(a, b, c) as f64,
