@@ -1,14 +1,18 @@
-pub mod areas_volumes; // Import the module containing area and volume calculation functions
-pub use areas_volumes::*; // Re-export everything from the module for use in this file
+pub mod areas_volumes;
 
-// Determines if a given number of 2D shapes can fit within a 2D container of size x * y
+use areas_volumes::{
+    GeometricalShapes, GeometricalVolumes,
+    square_area, circle_area, rectangle_area, triangle_area,
+    cube_volume, sphere_volume, cone_volume, triangular_pyramid_volume, parallelepiped_volume
+};
+
 pub fn area_fit(
     (x, y): (usize, usize),
     kind: GeometricalShapes,
     times: usize,
     (a, b): (usize, usize),
 ) -> bool {
-    let max_size = x * y; // Calculate total available area
+    let max_size = x * y;
     let size = match kind {
         GeometricalShapes::Square => square_area(a) as f64,
         GeometricalShapes::Circle => circle_area(a),
@@ -18,14 +22,13 @@ pub fn area_fit(
     times as f64 * size <= max_size as f64
 }
 
-// Determines if a given number of 3D volumes can fit within a 3D container of size x * y * z
 pub fn volume_fit(
     (x, y, z): (usize, usize, usize),
     kind: GeometricalVolumes,
     times: usize,
     (a, b, c): (usize, usize, usize),
 ) -> bool {
-    let max_size = x * y * z; // Calculate total available volume
+    let max_size = x * y * z;
     let size = match kind {
         GeometricalVolumes::Cube => cube_volume(a) as f64,
         GeometricalVolumes::Sphere => sphere_volume(a),
