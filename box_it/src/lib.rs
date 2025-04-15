@@ -1,6 +1,3 @@
-pub use core::num;
-use std::f64;
-
 pub fn transform_and_save_on_heap(s: String) -> Box<Vec<u32>> {
     let nums_str=s.split_ascii_whitespace();
     let mut nums:Vec<u32>=vec![];
