@@ -1,29 +1,27 @@
-use chrono::prelude::*;
-use json::JsonValue;
+use chrono::*;
+pub use json::*;
 use std::collections::HashMap;
-
-/// Computes the number of commits per GitHub author (by login).
-pub fn commits_per_author(data: &JsonValue) -> HashMap<String, u32> {
-    let mut counts = HashMap::new();
-    for commit in data.members() {
-        if let Some(login) = commit["author"]["login"].as_str() {
-            *counts.entry(login.to_string()).or_insert(0) += 1;
-        }
-    }
-    counts
+pub fn commits_per_week(data: &json::JsonValue) -> HashMap<String, u32> {
+    let mut map = HashMap::new();
+    data.members().for_each(|x| {
+        let date_string = x["commit"]["author"]["date"].to_string();
+        let date =
+            chrono::NaiveDateTime::parse_from_str(&date_string, "%Y-%m-%dT%H:%M:%SZ").unwrap();
+        let week_number = date.iso_week().week();
+        let year = date.year();
+        let week_key = format!("{}-W{}", year, week_number);
+        let count = map.entry(week_key).or_insert(0);
+        *count += 1;
+    });
+    map
 }
-
-/// Computes the number of commits per ISO week (formatted as "YYYY-Www").
-pub fn commits_per_week(data: &JsonValue) -> HashMap<String, u32> {
-    let mut counts = HashMap::new();
-    for commit in data.members() {
-        if let Some(date_str) = commit["commit"]["author"]["date"].as_str() {
-            if let Ok(dt) = DateTime::parse_from_rfc3339(date_str) {
-                let iso_week = dt.iso_week();
-                let week_key = format!("{}-W{}", iso_week.year(), iso_week.week());
-                *counts.entry(week_key).or_insert(0) += 1;
-            }
-        }
-    }
-    counts
+pub fn commits_per_author(data: &json::JsonValue) -> HashMap<String, u32> {
+    //data.members().for_each(|x| println!("{}", x["commit"]["author"]["name"]));
+    let mut map = HashMap::new();
+    data.members().for_each(|x| {
+        let author = x["author"]["login"].to_string();
+        let count = map.entry(author).or_insert(0);
+        *count += 1;
+    });
+    map
 }
