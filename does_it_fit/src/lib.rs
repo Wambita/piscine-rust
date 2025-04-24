@@ -1,3 +1,5 @@
+mod areas_volumes;
+
 pub fn area_fit(
     (x, y): (usize, usize),
     kind: areas_volumes::GeometricalShapes,
