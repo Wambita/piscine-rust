@@ -1,54 +1,49 @@
 use json::JsonValue;
-use json::object;
 
 pub struct Food {
     pub name: String,
-    pub calories: [String; 2], // [kJ, kcal]
+    pub calories: (String, String),
     pub fats: f64,
     pub carbs: f64,
     pub proteins: f64,
     pub nbr_of_portions: f64,
 }
 
-pub fn calculate_macros(foods: Vec<Food>) -> JsonValue {
+pub fn calculate_macros(foods: &[Food]) -> JsonValue {
     let mut total_cals = 0.0;
     let mut total_carbs = 0.0;
     let mut total_proteins = 0.0;
     let mut total_fats = 0.0;
 
     for food in foods {
-        // Parse kcal value from calories[1] (assuming format like "510kcal")
-        let kcal_str = food.calories[1]
-            .trim_end_matches("kcal")
-            .trim()
-            .parse::<f64>()
-            .unwrap_or(0.0);
-
-        // Multiply each macro by number of portions
-        total_cals += kcal_str * food.nbr_of_portions;
+        // Parse kcal from calories tuple (second element)
+        let kcal_str = food.calories.1.trim_end_matches("kcal");
+        let kcal: f64 = kcal_str.parse().unwrap_or(0.0);
+        
+        // Accumulate totals, scaled by number of portions
+        total_cals += kcal * food.nbr_of_portions;
         total_carbs += food.carbs * food.nbr_of_portions;
         total_proteins += food.proteins * food.nbr_of_portions;
         total_fats += food.fats * food.nbr_of_portions;
     }
 
-    // Format numbers according to specifications
-    let format_number = |value: f64| -> f64 {
-        // Round to 2 decimal places
+    // Round to two decimal places, or one if second decimal is zero
+    let round = |value: f64| {
         let rounded = (value * 100.0).round() / 100.0;
-        // Check if it ends in .x0
-        if (rounded * 10.0).fract().abs() < 0.0001 {
-            // Round to 1 decimal place
-            (rounded * 10.0).round() / 10.0
+        let formatted = format!("{:.2}", rounded);
+        if formatted.ends_with("0") {
+            format!("{:.1}", rounded)
         } else {
-            rounded
+            formatted
         }
     };
 
-    // Create JSON object with formatted values
-    object! {
-        "cals": format_number(total_cals),
-        "carbs": format_number(total_carbs),
-        "proteins": format_number(total_proteins),
-        "fats": format_number(total_fats)
-    }
+    // Create JSON object
+    let mut result = JsonValue::new_object();
+    result["cals"] = JsonValue::Number(json::number::Number::from_f64(total_cals).unwrap());
+    result["carbs"] = JsonValue::Number(json::number::Number::from_f64(total_carbs).unwrap());
+    result["proteins"] = JsonValue::Number(json::number::Number::from_f64(total_proteins).unwrap());
+    result["fats"] = JsonValue::Number(json::number::Number::from_f64(total_fats).unwrap());
+
+    result
 }
