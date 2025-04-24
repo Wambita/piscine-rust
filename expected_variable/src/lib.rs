@@ -1,41 +1,43 @@
-use case::CaseExt;
-use edit_distance::edit_distance;
-
-// This function calculates the similarity between an original and an expected string using the edit distance
-// and returns a percentage similarity if it meets certain conditions.
-pub fn expected_variable(original: &str, expected: &str) -> Option<String> {
-    // If the original string contains a space, return None (no comparison)
-    if original.contains(" ") {
+fn edit_distance(source: &str, target: &str) -> usize {
+    let len1 = source.chars().count();
+    let len2 = target.chars().count();
+    let mut dp = vec![vec![0; len2 + 1]; len1 + 1];
+    for i in 0..=len1 {
+        for j in 0..=len2 {
+            if i == 0 {
+                dp[i][j] = j;
+            } else if j == 0 {
+                dp[i][j] = i;
+            } else {
+                let cost = if source.chars().nth(i - 1) == target.chars().nth(j - 1) {
+                    0
+                } else {
+                    1
+                };
+                dp[i][j] = (dp[i - 1][j - 1] + cost)
+                    .min(dp[i - 1][j] + 1)
+                    .min(dp[i][j - 1] + 1);
+            }
+        }
+    }
+    dp[len1][len2]
+}
+fn is_snake_case(s: &str) -> bool {
+    s.chars().all(|c| c.is_lowercase() || c == '_')
+}
+pub fn expected_variable(a: &str, b: &str) -> Option<String> {
+    if a.contains(' ') || b.contains(' ') {
         return None;
     }
-    
-    // If the original string does not contain an underscore or any uppercase letters, return None
-    if !original.contains('_') && !original.chars().any(|c| c.is_ascii_uppercase()) {
-        None
-    } else {
-        // Calculate the edit distance between the lowercase versions of the original and expected strings
-        let diff = edit_distance(&original.to_lowercase(), &expected.to_lowercase());
-        
-        // If the edit distance is greater than the length of the original string, return None
-        if diff > original.len() {
-            return None;
+    let snake_a = a.to_lowercase();
+    let snake_b = b.to_lowercase();
+    if is_snake_case(&snake_a) && is_snake_case(&snake_b) {
+        let distance = edit_distance(&snake_a, &snake_b);
+        let similarity = 1.0 - (distance as f64 / b.len() as f64);
+        let res = (similarity * 100.0).round();
+        if res > 50.0 {
+            return Some(format!("{}%", res));
         }
-        
-        // Find the larger of the two string lengths
-        let bigger = std::cmp::max(original.len(), expected.len());
-        
-        // Calculate the percentage similarity based on the edit distance
-        let res = ((bigger - diff) * 100) as f64 / bigger as f64;
-        
-        // Round the result up
-        let resu = res.ceil();
-        
-        // If the percentage similarity is less than 50%, return None
-        if resu < 50.0 {
-            return None;
-        }
-        
-        // Otherwise, return the percentage similarity as a string with a "%" sign
-        return Some(resu.to_string() + &"%".to_string());
     }
+    None
 }
