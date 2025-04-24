@@ -40,10 +40,10 @@ pub fn calculate_macros(foods: &[Food]) -> JsonValue {
 
     // Create JSON object
     let mut result = JsonValue::new_object();
-    result["cals"] = JsonValue::Number(json::number::Number::from_f64(total_cals).unwrap());
-    result["carbs"] = JsonValue::Number(json::number::Number::from_f64(total_carbs).unwrap());
-    result["proteins"] = JsonValue::Number(json::number::Number::from_f64(total_proteins).unwrap());
-    result["fats"] = JsonValue::Number(json::number::Number::from_f64(total_fats).unwrap());
+    result["cals"] = JsonValue::Number(json::number::Number::from(total_cals));
+    result["carbs"] = JsonValue::Number(json::number::Number::from(total_carbs));
+    result["proteins"] = JsonValue::Number(json::number::Number::from(total_proteins));
+    result["fats"] = JsonValue::Number(json::number::Number::from(total_fats));
 
     result
 }
