@@ -1,3 +1,4 @@
+// Importing Matrix by defining it as a dependency in Cargo.toml
 use matrix_ops::*;
 
 fn main() {

@@ -1,72 +1,55 @@
 use std::ops::{Add, Sub};
 
-use lalgebra_scalar::*;
-
 #[derive(Debug, Clone, PartialEq)]
-pub struct Matrix<T>(pub Vec<Vec<T>>);
+pub struct Matrix(pub Vec<Vec<i32>>);
 
-impl<T: Scalar + std::clone::Clone> Matrix<T> {
-    pub fn new() -> Matrix<T> {
-        Matrix(vec![vec![T::zero()]])
-    }
+impl Add for Matrix {
+    type Output = Option<Matrix>;
 
-    pub fn zero(row: usize, col: usize) -> Matrix<T> {
-        Matrix(vec![vec![T::zero(); col]; row])
-    }
-
-    pub fn identity(n: usize) -> Matrix<T> {
-        let mut mat = vec![vec![T::zero(); n]; n];
-        for i in 0..n {
-            mat[i][i] = T::one();
-        }
-        Matrix(mat)
-    }
-}
-
-impl<T: Scalar> Sub for Matrix<T> {
-    type Output = Option<Matrix<T>>;
-
-    fn sub(self, other: Matrix<T>) -> Option<Matrix<T>> {
-        if self.0.len() != other.0.len() || self.0[0].len() != other.0[0].len() {
+    fn add(self, rhs: Matrix) -> Self::Output {
+        if self.0.len() != rhs.0.len() || self.0.iter().zip(&rhs.0).any(|(a, b)| a.len() != b.len()) {
             return None;
         }
 
-        let result = self
-            .0
-            .iter()
-            .zip(other.0.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(&val1, &val2)| val1 - val2)
-                    .collect()
-            })
-            .collect();
+        let result = self.0.into_iter().zip(rhs.0.into_iter()).map(|(row_a, row_b)| {
+            row_a.into_iter().zip(row_b.into_iter()).map(|(a, b)| a + b).collect()
+        }).collect();
 
         Some(Matrix(result))
     }
 }
 
-impl<T: Scalar> Add for Matrix<T> {
-    type Output = Option<Matrix<T>>;
+impl Sub for Matrix {
+    type Output = Option<Matrix>;
 
-    fn add(self, other: Matrix<T>) -> Option<Matrix<T>> {
-        if self.0.len() != other.0.len() || self.0[0].len() != other.0[0].len() {
+    fn sub(self, rhs: Matrix) -> Self::Output {
+        if self.0.len() != rhs.0.len() || self.0.iter().zip(&rhs.0).any(|(a, b)| a.len() != b.len()) {
             return None;
         }
 
-        let result = self
-            .0
-            .iter()
-            .zip(other.0.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(&val1, &val2)| val1 + val2)
-                    .collect()
-            })
-            .collect();
+        let result = self.0.into_iter().zip(rhs.0.into_iter()).map(|(row_a, row_b)| {
+            row_a.into_iter().zip(row_b.into_iter()).map(|(a, b)| a - b).collect()
+        }).collect();
 
         Some(Matrix(result))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        let matrix = Matrix(vec![vec![1, 2], vec![3, 4]]);
+        let matrix_2 = Matrix(vec![vec![1, 1], vec![1, 1]]);
+        assert_eq!(matrix + matrix_2, Some(Matrix(vec![vec![2, 3], vec![4, 5]])));
+    }
+
+    #[test]
+    fn test_sub() {
+        let matrix = Matrix(vec![vec![1, 2], vec![3, 4]]);
+        let matrix_2 = Matrix(vec![vec![1, 1], vec![1, 1]]);
+        assert_eq!(matrix - matrix_2, Some(Matrix(vec![vec![0, 1], vec![2, 3]])));
     }
 }
