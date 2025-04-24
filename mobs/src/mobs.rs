@@ -1,8 +1,8 @@
 pub mod boss;
 pub mod member;
+pub use crate::mobs::member::Member;
+pub use crate::mobs::boss::Boss;
 
-pub use boss::Boss;
-pub use member::Member;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Mob {
@@ -15,50 +15,65 @@ pub struct Mob {
 
 impl Mob {
     pub fn recruit(&mut self, name: &str, age: u8) {
-        self.members
-            .push(Member::new(name, member::Role::Associate, age))
+        let new_recruit = 
+            member::new(name, member::Role::Associate, age);
+        self.members.push(new_recruit);
     }
-    pub fn attack(&mut self, mob: &mut Mob) {
-        let pw_self: u8 = self.members.iter().map(|m| m.role.power()).sum();
-        let pw_mob: u8 = mob.members.iter().map(|m| m.role.power()).sum();
-        if pw_self > pw_mob {
-            mob.members.pop();
-            if mob.members.len() == 0 {
-                self.wealth += mob.wealth;
-                mob.wealth = 0;
-                while mob.cities.len() > 0 {
-                    self.cities.push(mob.cities[0].clone());
-                    mob.cities.remove(0);
+
+    pub fn attack(&mut self, enemy: &mut Mob) {
+        let attacker_power = Mob::calculate_power(self);
+        let enemy_power = Mob::calculate_power(enemy);
+
+        if attacker_power < enemy_power || attacker_power == enemy_power{
+            self.members.pop();
+        } else {
+            enemy.members.pop();
+        }
+
+        if enemy.members.is_empty(){
+            self.wealth += enemy.wealth;
+            enemy.wealth = 0;
+            self.cities.append(&mut enemy.cities);
+        }else if self.members.is_empty(){
+            enemy.wealth += self.wealth;
+            self.wealth = 0;
+            enemy.cities.append(&mut self.cities);
+        }
+    }
+
+    fn calculate_power(mob:&Mob) -> usize{
+        let mut result_power: usize = 0;
+        for member in &mob.members{
+            match member.role{
+                member::Role::Underboss => result_power += 4,
+                member::Role::Caporegime => result_power += 3,
+                member::Role::Soldier => result_power += 2,
+                member::Role::Associate => result_power += 1,
+            }
+        }
+
+        return result_power;
+    }
+
+    pub fn steal(&mut self, enemy: &mut Mob, amount: u32) {
+        if enemy.wealth >= amount{
+            enemy.wealth -= amount;
+            self.wealth += amount
+        }else{
+            self.wealth += enemy.wealth;
+            enemy.wealth = 0;
+        }
+    }
+
+    pub fn conquer_city(&mut self, players: Vec<Mob>, city_name: String, value: u8){
+        for mob in players{
+            for city in mob.cities{
+                if city.0 == city_name{
+                    return;
                 }
             }
-            return;
         }
-        self.members.pop();
-        if self.members.len() == 0 {
-            mob.wealth += self.wealth;
-            self.wealth = 0;
-            while self.cities.len() > 0 {
-                mob.cities.push(self.cities[0].clone());
-                self.cities.remove(0);
-            }
-        }
-    }
-    pub fn steal(&mut self, mob: &mut Mob, value: u32) {
-        if mob.wealth > value {
-            mob.wealth -= value;
-            self.wealth += value;
-            return;
-        }
-        self.wealth += mob.wealth;
-        mob.wealth = 0;
-    }
-    pub fn conquer_city(&mut self, mobs: Vec<Mob>, city: String, value: u8) {
-        let have = mobs
-            .iter()
-            .flat_map(|m| m.cities.clone())
-            .any(|(e, _)| e == city);
-        if !have {
-            self.cities.push((city, value))
-        }
+
+        self.cities.push((city_name, value));
     }
 }
