@@ -32,38 +32,29 @@ impl Cart {
         let mut prices = self.items.iter().map(|(_, price)| *price).collect::<Vec<f32>>();
         prices.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
-        let mut adjusted_prices = Vec::new();
+        // Calculate total and discount
+        let total = prices.iter().sum::<f32>();
+        let mut discount = 0.0;
         let mut i = 0;
-
-        while i < prices.len() {
-            let chunk_size = std::cmp::min(3, prices.len() - i);
-            let chunk = &prices[i..i + chunk_size];
-            
-            if chunk_size == 3 {
-                // Calculate total and discount for three items
-                let total = chunk.iter().sum::<f32>();
-                let discount = chunk[0]; // Cheapest item is free
-                let target_total = total - discount;
-                
-                // Calculate scaling factor to distribute discount
-                let scale = if total > 0.0 { target_total / total } else { 1.0 };
-                
-                // Apply scaled prices, round to 2 decimal places
-                for &price in chunk {
-                    let adjusted = (price * scale * 100.0).round() / 100.0;
-                    adjusted_prices.push(adjusted);
-                }
-            } else {
-                // For remaining items (less than 3), keep original prices
-                adjusted_prices.extend_from_slice(chunk);
-            }
-            
-            i += chunk_size;
+        while i + 2 < prices.len() {
+            // Cheapest item in each group of three is free
+            discount += prices[i];
+            i += 3;
         }
+        let target_total = total - discount;
 
-        // Sort adjusted prices to match expected output
+        // Calculate scaling factor
+        let scale = if total > 0.0 { target_total / total } else { 1.0 };
+
+        // Apply scaling to all prices
+        let mut adjusted_prices = prices
+            .iter()
+            .map(|&price| (price * scale * 100.0).round() / 100.0)
+            .collect::<Vec<f32>>();
+
+        // Sort adjusted prices
         adjusted_prices.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-        
+
         // Store in receipt and return
         self.receipt = adjusted_prices.clone();
         adjusted_prices
