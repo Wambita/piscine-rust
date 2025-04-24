@@ -1,24 +1,19 @@
-use sales::Cart;
-use sales::Store;
+use sales::*;
 
 fn main() {
     let store = Store::new(vec![
-        ("Apple".to_string(), 1.0),
-        ("Banana".to_string(), 2.0),
-        ("Orange".to_string(), 3.0),
-        ("Mango".to_string(), 4.0),
-        ("Peach".to_string(), 5.0),
-    ]);
+        (String::from("product A"), 1.23),
+        (String::from("product B"), 23.1),
+        (String::from("product C"), 3.12)]);
+
+    println!("{:?}", store);
 
     let mut cart = Cart::new();
+    cart.insert_item(&store, String::from("product A"));
+    cart.insert_item(&store, String::from("product B"));
+    cart.insert_item(&store, String::from("product C"));
 
-    cart.insert_item(&store, "Apple".to_string());
-    cart.insert_item(&store, "Banana".to_string());
-    cart.insert_item(&store, "Orange".to_string());
-    cart.insert_item(&store, "Mango".to_string());
-    cart.insert_item(&store, "Peach".to_string());
+    println!("{:?}", cart.generate_receipt());
 
-    let receipt = cart.generate_receipt();
-
-    println!("Receipt: {:?}", receipt);
+    println!("{:?}", cart);
 }
