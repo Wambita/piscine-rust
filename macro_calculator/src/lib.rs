@@ -36,7 +36,15 @@ pub fn calculate_macros(foods: &[Food]) -> JsonValue {
         } else {
             formatted
         }
+        .parse::<f64>()
+        .unwrap()
     };
+
+    // Apply rounding to totals
+    let total_cals = round(total_cals);
+    let total_carbs = round(total_carbs);
+    let total_proteins = round(total_proteins);
+    let total_fats = round(total_fats);
 
     // Create JSON object
     let mut result = JsonValue::new_object();
