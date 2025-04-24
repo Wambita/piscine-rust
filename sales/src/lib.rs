@@ -10,45 +10,42 @@ impl Store {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cart {
-    pub items: Vec<String, f32>,
-    pub receipt: Vec<f32>,
+    pub items: Vec<(String, f32)>,
 }
+
+
+
 impl Cart {
-    pub fn new() -> Cart {
-        Cart{
+    pub fn new() -> Self {
+        Self {
             items: vec![],
-            receipt:vec![],
         }
     }
-    pub fn insert_item(&mut self, s: &Store, ele: String) {
-        if let Some(product)= s.products.iter().find(|(n, _)| n == &ele){
-            self.items.push(product.clone());
+
+    pub fn insert_item(&mut self, _store: &Store, item: String) {
+        if let Some((_name, price)) = _store.products.iter().find(|(name, _)| name == &item) {
+            self.items.push((item.clone(), *price));
         }
     }
-    pub fn generate_receipt(&mut self) -> Vec<f32> {
+
+    pub fn generate_receipt(&self) -> Vec<f32> {
         let mut prices: Vec<f32> = self.items.iter().map(|(_, p)| *p).collect();
-        prices.sort_by(|a, b| a.partial_cmp(b).unwrap()); // sort ascending
+        prices.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        let mut result: Vec<f32> = vec![];
-
+        let mut receipt = vec![];
         for chunk in prices.chunks(3) {
             if chunk.len() == 3 {
                 let total: f32 = chunk.iter().sum();
-                let discount = chunk.iter().cloned().fold(f32::INFINITY, f32::min);
-
+                let discount = *chunk.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
                 let adjusted = chunk
                     .iter()
                     .map(|x| ((x - (discount * x / total)) * 100.0).round() / 100.0)
                     .collect::<Vec<f32>>();
-                result.extend(adjusted);
+                receipt.extend(adjusted);
             } else {
-                result.extend(chunk.iter().map(|x| (x * 100.0).round() / 100.0));
+                receipt.extend_from_slice(chunk);
             }
         }
-
-        result.sort_by(|a, b| a.partial_cmp(b).unwrap()); // sort the receipt
-        self.receipt = result.clone();
-        result
- 
+        receipt
     }
 }
