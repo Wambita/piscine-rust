@@ -30,41 +30,31 @@ impl Cart {
 
     pub fn generate_receipt(&mut self) -> Vec<f32> {
         let mut prices = self.items.iter().map(|(_, price)| *price).collect::<Vec<f32>>();
-        prices.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-
-        // Calculate total
-        let total = prices.iter().sum::<f32>();
-
-        // Calculate discount: cheapest item in each group of three
-        let mut discount = 0.0;
-        let mut i = 0;
-        while i + 2 < prices.len() {
-            discount += prices[i];
-            i += 3;
-        }
-
-        // Scaling factor to match expected output
-        let scale = if total > 0.0 {
-            if prices.len() == 7 {
-                0.9545 // Fine-tuned to match test output
+        prices.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    
+        let mut receipt = Vec::new();
+    
+        for chunk in prices.chunks(3) {
+            if chunk.len() == 3 {
+                let mut discounted = chunk.to_vec();
+                let min = *chunk.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+                let total: f32 = chunk.iter().sum();
+    
+                // Calculate proportional reduction so the total discount equals `min`
+                let factor = min / total;
+                for price in chunk {
+                    let new_price = ((price - (price * factor)) * 100.0).round() / 100.0;
+                    receipt.push(new_price);
+                }
             } else {
-                (total - discount) / total
+                // No discount
+                receipt.extend(chunk.iter().copied());
             }
-        } else {
-            1.0
-        };
-
-        // Apply scaling to all prices
-        let mut adjusted_prices = prices
-            .iter()
-            .map(|&price| (price * scale * 100.0).round() / 100.0)
-            .collect::<Vec<f32>>();
-
-        // Sort adjusted prices
-        adjusted_prices.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-
-        // Store in receipt and return
-        self.receipt = adjusted_prices.clone();
-        adjusted_prices
+        }
+    
+        receipt.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        self.receipt = receipt.clone();
+        receipt
     }
+    
 }
