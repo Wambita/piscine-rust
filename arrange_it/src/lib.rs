@@ -15,5 +15,4 @@ pub fn arrange_phrase(phrase: &str) -> String {
         })
         .collect::<Vec<String>>()
         .join(" ")
-}ref_cell
-how_many_references
+}
