@@ -15,4 +15,4 @@ pub fn arrange_phrase(phrase: &str) -> String {
         })
         .collect::<Vec<String>>()
         .join(" ")
-}
+} 
