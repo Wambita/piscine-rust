@@ -9,47 +9,52 @@ pub enum Suit {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub enum Rank{
+pub enum Rank {
     Ace,
     King,
-    Queen, 
+    Queen,
     Jack,
-    Number(u8)
+    Number(u8), // For cards 2–10
 }
 
 impl Suit {
+    /// Returns a random suit
     pub fn random() -> Suit {
-        let mut rnd = rand::thread_rng();
-        match rnd.gen_range(1..4) {
+        let mut rng = rand::thread_rng();
+        match rng.gen_range(1..=4) {
             1 => Suit::Heart,
             2 => Suit::Diamond,
             3 => Suit::Spade,
             _ => Suit::Club,
         }
     }
+
+    /// Translates a u8 value to a suit
     pub fn translate(value: u8) -> Suit {
         match value {
             1 => Suit::Heart,
             2 => Suit::Diamond,
             3 => Suit::Spade,
             4 => Suit::Club,
-            _ => panic!("Invalid suit value!"),
+            _ => panic!("Invalid suit value! Must be 1–4"),
         }
     }
 }
 
 impl Rank {
+    /// Returns a random rank
     pub fn random() -> Rank {
-        let mut random = rand::thread_rng();
-        match random.gen_range(1..=13) {
+        let mut rng = rand::thread_rng();
+        match rng.gen_range(1..=13) {
             1 => Rank::Ace,
             11 => Rank::Jack,
             12 => Rank::Queen,
             13 => Rank::King,
-            value => Rank::Number(value),
+            n => Rank::Number(n),
         }
     }
 
+    /// Translates a u8 value to a rank
     pub fn translate(value: u8) -> Rank {
         match value {
             1 => Rank::Ace,
@@ -57,7 +62,7 @@ impl Rank {
             12 => Rank::Queen,
             13 => Rank::King,
             2..=10 => Rank::Number(value),
-            _ => panic!("Invalid rank value!"),
+            _ => panic!("Invalid rank value! Must be 1–13"),
         }
     }
 }
@@ -68,8 +73,9 @@ pub struct Card {
     pub rank: Rank,
 }
 
-pub fn winner_card(card: Card) -> bool {
-    card == Card {
+/// Returns true if the card is the Ace of Spades
+pub fn winner_card(card: &Card) -> bool {
+    *card == Card {
         suit: Suit::Spade,
         rank: Rank::Ace,
     }
